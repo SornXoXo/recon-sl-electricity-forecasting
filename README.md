@@ -2,7 +2,7 @@
 
 MSc Applied Machine Learning final assignment. The project forecasts each Sri Lankan household's
 **next-month electricity consumption (kWh)** from its own past readings. Use cases:
-- **Ceylon Electricity Board (CEB) demand planning:** household forecasts aggregate to feeder and region level.
+- **Lanka Electricity Company (LECO) demand planning:** household forecasts aggregate to feeder and region level.
 - **Bill anticipation:** households can see what's coming under the block tariff.
 
 ## Data
