@@ -1,0 +1,15 @@
+[
+  "lag_1",
+  "lag_2",
+  "lag_3",
+  "lag_6",
+  "lag_12",
+  "roll_mean_3",
+  "roll_mean_6",
+  "roll_std_3",
+  "roll_std_6",
+  "hh_mean_past",
+  "month_of_year",
+  "month_sin",
+  "month_cos"
+]

@@ -1,0 +1,4 @@
+outlier_method,readings_clipped,val_RMSE_LightGBM,val_RMSE_naive
+none,0,41.4,45.11
+global,532,57.04,57.21
+household,316,41.91,45.18

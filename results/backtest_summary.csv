@@ -1,0 +1,7 @@
+model,mean_RMSE,mean_MAE,mean_RMSE_skill_pct,mean_MAE_skill_pct,months_beating_naive_RMSE,months_beating_naive_MAE
+RandomForest,42.92,20.21,3.93,-2.05,6.0,6.0
+Stacking (LGBM+CatBoost+RF -> Ridge),43.32,20.13,3.08,-1.57,6.0,5.0
+XGBoost,43.34,20.23,3.04,-2.1,7.0,6.0
+LightGBM,43.44,20.16,2.83,-1.72,6.0,6.0
+CatBoost,43.7,20.59,2.05,-4.13,5.0,6.0
+Naive (last month),44.68,19.9,,,,

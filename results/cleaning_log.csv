@@ -1,0 +1,7 @@
+step,rows,households,blank_to_nan,thousands_separator_recovered,other_unparseable,zeros,households_affected,households_dropped,rows_dropped,households_remaining,rows_remaining,readings_clipped,imputed,used_global_median_fallback,global_median
+load,101575.0,4063.0,,,,,,,,,,,,,
+parse numeric,,,590.0,57.0,0.0,,,,,,,,,,
+zeros treated as missing,,,,,,2332.0,437.0,,,,,,,,
+drop households with < 12 valid months,,,,,,,,64.0,1600.0,3999.0,99975.0,,,,
+outliers: clip readings > 5x household median (stats fit on months <= 2024-04-30),,,,,,,92.0,,,,,316.0,,,
+impute missing with household median (train months),,,,,,,,,,,,,1616.0,0.0,97.0

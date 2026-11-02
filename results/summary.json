@@ -1,0 +1,552 @@
+{
+  "best_model": "LightGBM",
+  "selection_rule": "lowest validation RMSE among proposed (non-lecture) models: LightGBM, CatBoost, Stacking (LGBM+CatBoost+RF -> Ridge)",
+  "target_formulation": "change (prediction = lag_1 + model output)",
+  "target_formulation_validation": [
+    {
+      "model": "RandomForest",
+      "target": "level",
+      "RMSE": 41.384,
+      "MAE": 20.387
+    },
+    {
+      "model": "RandomForest",
+      "target": "change",
+      "RMSE": 41.492,
+      "MAE": 20.316
+    },
+    {
+      "model": "XGBoost",
+      "target": "level",
+      "RMSE": 43.975,
+      "MAE": 21.609
+    },
+    {
+      "model": "XGBoost",
+      "target": "change",
+      "RMSE": 42.077,
+      "MAE": 20.439
+    },
+    {
+      "model": "LightGBM",
+      "target": "level",
+      "RMSE": 41.75,
+      "MAE": 20.613
+    },
+    {
+      "model": "LightGBM",
+      "target": "change",
+      "RMSE": 41.821,
+      "MAE": 20.335
+    },
+    {
+      "model": "CatBoost",
+      "target": "level",
+      "RMSE": 43.44,
+      "MAE": 21.366
+    },
+    {
+      "model": "CatBoost",
+      "target": "change",
+      "RMSE": 42.229,
+      "MAE": 20.659
+    }
+  ],
+  "splits": {
+    "train": {
+      "target_months": "2023-04 -> 2024-04",
+      "n_months": 13,
+      "rows": 51217,
+      "households": 3999
+    },
+    "validation": {
+      "target_months": "2024-05 -> 2024-07",
+      "n_months": 3,
+      "rows": 11827,
+      "households": 3976
+    },
+    "test": {
+      "target_months": "2024-08 -> 2024-10",
+      "n_months": 3,
+      "rows": 11790,
+      "households": 3969
+    }
+  },
+  "cleaning_log": [
+    {
+      "step": "load",
+      "rows": 101575,
+      "households": 4063
+    },
+    {
+      "step": "parse numeric",
+      "blank_to_nan": 590,
+      "thousands_separator_recovered": 57,
+      "other_unparseable": 0
+    },
+    {
+      "step": "zeros treated as missing",
+      "zeros": 2332,
+      "households_affected": 437
+    },
+    {
+      "step": "drop households with < 12 valid months",
+      "households_dropped": 64,
+      "rows_dropped": 1600,
+      "households_remaining": 3999,
+      "rows_remaining": 99975
+    },
+    {
+      "step": "outliers: clip readings > 5x household median (stats fit on months <= 2024-04-30)",
+      "readings_clipped": 316,
+      "households_affected": 92
+    },
+    {
+      "step": "impute missing with household median (train months)",
+      "imputed": 1616,
+      "used_global_median_fallback": 0,
+      "global_median": 97.0
+    }
+  ],
+  "outlier_method_comparison": [
+    {
+      "outlier_method": "none",
+      "readings_clipped": 0,
+      "val_RMSE_LightGBM": 41.4,
+      "val_RMSE_naive": 45.11
+    },
+    {
+      "outlier_method": "global",
+      "readings_clipped": 532,
+      "val_RMSE_LightGBM": 57.04,
+      "val_RMSE_naive": 57.21
+    },
+    {
+      "outlier_method": "household",
+      "readings_clipped": 316,
+      "val_RMSE_LightGBM": 41.91,
+      "val_RMSE_naive": 45.18
+    }
+  ],
+  "hyperparameters": {
+    "RandomForest": {
+      "params": {
+        "n_estimators": 300,
+        "max_depth": null,
+        "min_samples_leaf": 10,
+        "max_features": 0.7
+      },
+      "n_rounds": null
+    },
+    "XGBoost": {
+      "params": {
+        "max_depth": 4,
+        "min_child_weight": 20,
+        "reg_lambda": 10.0
+      },
+      "n_rounds": 125,
+      "learning_rate": 0.05
+    },
+    "LightGBM": {
+      "params": {
+        "num_leaves": 63,
+        "min_child_samples": 20,
+        "reg_lambda": 0.0
+      },
+      "n_rounds": 50,
+      "learning_rate": 0.05
+    },
+    "CatBoost": {
+      "params": {
+        "depth": 8,
+        "l2_leaf_reg": 10.0
+      },
+      "n_rounds": 319,
+      "learning_rate": 0.05
+    }
+  },
+  "search_spaces": {
+    "RandomForest": {
+      "n_estimators": [
+        300
+      ],
+      "max_depth": [
+        12,
+        null
+      ],
+      "min_samples_leaf": [
+        10,
+        40
+      ],
+      "max_features": [
+        0.4,
+        0.7
+      ]
+    },
+    "XGBoost": {
+      "max_depth": [
+        4,
+        6,
+        8
+      ],
+      "min_child_weight": [
+        5,
+        20
+      ],
+      "reg_lambda": [
+        1.0,
+        10.0
+      ]
+    },
+    "LightGBM": {
+      "num_leaves": [
+        15,
+        31,
+        63
+      ],
+      "min_child_samples": [
+        20,
+        100
+      ],
+      "reg_lambda": [
+        0.0,
+        10.0
+      ]
+    },
+    "CatBoost": {
+      "depth": [
+        4,
+        6,
+        8
+      ],
+      "l2_leaf_reg": [
+        3.0,
+        10.0
+      ]
+    }
+  },
+  "stacking": {
+    "bases": [
+      "LightGBM",
+      "CatBoost",
+      "RandomForest"
+    ],
+    "ridge_alpha": 1000000.0,
+    "weights": {
+      "LightGBM": 0.21434599978716343,
+      "CatBoost": 0.27529952655090734,
+      "RandomForest": 0.4970012395332134
+    },
+    "intercept": -1.3240904892550702,
+    "oof_blocks": [
+      "2023-12..2024-01",
+      "2024-02..2024-03",
+      "2024-04..2024-05",
+      "2024-06..2024-07"
+    ]
+  },
+  "validation_metrics": {
+    "RandomForest": {
+      "RMSE": 41.4924857196859,
+      "MAE": 20.315892005633156,
+      "R2": 0.8999748420486132,
+      "MAPE_%": 18.694646203423115,
+      "n": 11827.0,
+      "RMSE_skill_vs_naive_%": 8.164183828593552
+    },
+    "LightGBM": {
+      "RMSE": 41.82118757107293,
+      "MAE": 20.334691521086228,
+      "R2": 0.8983837739336029,
+      "MAPE_%": 18.756679079952768,
+      "n": 11827.0,
+      "RMSE_skill_vs_naive_%": 7.43666407952105
+    },
+    "XGBoost": {
+      "RMSE": 42.07650586968215,
+      "MAE": 20.4394165309673,
+      "R2": 0.8971392527242847,
+      "MAPE_%": 18.771272217015238,
+      "n": 11827.0,
+      "RMSE_skill_vs_naive_%": 6.871565027739058
+    },
+    "Stacking (LGBM+CatBoost+RF -> Ridge)": {
+      "RMSE": 42.210341845398354,
+      "MAE": 20.44555301093223,
+      "R2": 0.8964838578799814,
+      "MAPE_%": 18.693079491549433,
+      "n": 11827.0,
+      "RMSE_skill_vs_naive_%": 6.575344257886206
+    },
+    "CatBoost": {
+      "RMSE": 42.22886468225892,
+      "MAE": 20.659141039415083,
+      "R2": 0.8963929875751827,
+      "MAPE_%": 19.055296009020477,
+      "n": 11827.0,
+      "RMSE_skill_vs_naive_%": 6.53434744095911
+    },
+    "Naive (last month)": {
+      "RMSE": 45.18115856044932,
+      "MAE": 20.9133761731631,
+      "R2": 0.8813998971196236,
+      "MAPE_%": 18.608598565114693,
+      "n": 11827.0,
+      "RMSE_skill_vs_naive_%": 0.0
+    },
+    "Seasonal naive (same month last year)": {
+      "RMSE": 64.03673585149052,
+      "MAE": 34.645176291536316,
+      "R2": 0.7617523023499406,
+      "MAPE_%": 34.32609802073708,
+      "n": 11827.0,
+      "RMSE_skill_vs_naive_%": -41.73327531168489
+    }
+  },
+  "test_metrics": {
+    "Naive (last month)": {
+      "RMSE": 46.678394109857166,
+      "MAE": 18.644189991518235,
+      "R2": 0.8787949137730413,
+      "MAPE_%": 16.21602407568608,
+      "n": 11790.0,
+      "RMSE_skill_vs_naive_%": 0.0
+    },
+    "RandomForest": {
+      "RMSE": 48.448571841010754,
+      "MAE": 21.10460542068713,
+      "R2": 0.8694277190098356,
+      "MAPE_%": 16.799624669774975,
+      "n": 11790.0,
+      "RMSE_skill_vs_naive_%": -3.7922849851849794
+    },
+    "LightGBM": {
+      "RMSE": 48.49503458042286,
+      "MAE": 20.841892669176975,
+      "R2": 0.8691771582739836,
+      "MAPE_%": 16.55788024519326,
+      "n": 11790.0,
+      "RMSE_skill_vs_naive_%": -3.8918229840774865
+    },
+    "XGBoost": {
+      "RMSE": 48.67571792390044,
+      "MAE": 21.257559078188013,
+      "R2": 0.8682004998140748,
+      "MAPE_%": 17.0540191626758,
+      "n": 11790.0,
+      "RMSE_skill_vs_naive_%": -4.278904302797115
+    },
+    "CatBoost": {
+      "RMSE": 49.33678926602374,
+      "MAE": 21.741835909445964,
+      "R2": 0.8645962169982374,
+      "MAPE_%": 17.01980814272183,
+      "n": 11790.0,
+      "RMSE_skill_vs_naive_%": -5.695129849390423
+    },
+    "Stacking (LGBM+CatBoost+RF -> Ridge)": {
+      "RMSE": 49.65640506526115,
+      "MAE": 22.49193553306507,
+      "R2": 0.8628361767086192,
+      "MAPE_%": 17.39092280284746,
+      "n": 11790.0,
+      "RMSE_skill_vs_naive_%": -6.379848776278085
+    },
+    "Seasonal naive (same month last year)": {
+      "RMSE": 72.01247373924744,
+      "MAE": 36.860432569974556,
+      "R2": 0.711527451284896,
+      "MAPE_%": 33.52917713577181,
+      "n": 11790.0,
+      "RMSE_skill_vs_naive_%": -54.27367438941184
+    }
+  },
+  "arima_sample_test_metrics": {
+    "XGBoost": {
+      "RMSE": 51.51413599474442,
+      "MAE": 23.61936763700317,
+      "R2": 0.8686697466025057,
+      "MAPE_%": 18.08859255400584,
+      "n": 595.0,
+      "RMSE_skill_vs_naive_%": 5.068138730910365
+    },
+    "RandomForest": {
+      "RMSE": 52.75139372217374,
+      "MAE": 23.807993171170153,
+      "R2": 0.8622854527120545,
+      "MAPE_%": 18.09977268309645,
+      "n": 595.0,
+      "RMSE_skill_vs_naive_%": 2.7880814870809845
+    },
+    "CatBoost": {
+      "RMSE": 52.77104714045067,
+      "MAE": 23.851527325942953,
+      "R2": 0.8621828178583696,
+      "MAPE_%": 18.255778075549575,
+      "n": 595.0,
+      "RMSE_skill_vs_naive_%": 2.751863553084788
+    },
+    "Stacking (LGBM+CatBoost+RF -> Ridge)": {
+      "RMSE": 53.878982257324125,
+      "MAE": 24.961732194446707,
+      "R2": 0.8563350887061056,
+      "MAPE_%": 18.663414344518632,
+      "n": 595.0,
+      "RMSE_skill_vs_naive_%": 0.7101260614394977
+    },
+    "Naive (last month)": {
+      "RMSE": 54.26432738817239,
+      "MAE": 21.9890756302521,
+      "R2": 0.8542727429643253,
+      "MAPE_%": 17.383546530813295,
+      "n": 595.0,
+      "RMSE_skill_vs_naive_%": 0.0
+    },
+    "LightGBM": {
+      "RMSE": 54.51974617325927,
+      "MAE": 23.564029051457087,
+      "R2": 0.8528976562240997,
+      "MAPE_%": 17.723563828977248,
+      "n": 595.0,
+      "RMSE_skill_vs_naive_%": -0.4706937271327094
+    },
+    "ARIMA per household (AIC-selected)": {
+      "RMSE": 59.99372391524572,
+      "MAE": 22.265707622774062,
+      "R2": 0.8218755311608337,
+      "MAPE_%": 17.255802502048954,
+      "n": 595.0,
+      "RMSE_skill_vs_naive_%": -10.55831114626904
+    },
+    "Seasonal naive (same month last year)": {
+      "RMSE": 69.77907213171457,
+      "MAE": 39.41428571428571,
+      "R2": 0.7590303635732873,
+      "MAPE_%": 35.19677493115105,
+      "n": 595.0,
+      "RMSE_skill_vs_naive_%": -28.59105694346784
+    }
+  },
+  "test_metrics_level_target": {
+    "RandomForest (level target)": {
+      "RMSE": 45.67367066294407,
+      "MAE": 20.076513538270977,
+      "R2": 0.8839564880213073,
+      "MAPE_%": 16.521227845677277,
+      "n": 11790.0,
+      "RMSE_skill_vs_naive_%": 2.152437902101967
+    },
+    "Naive (last month)": {
+      "RMSE": 46.678394109857166,
+      "MAE": 18.644189991518235,
+      "R2": 0.8787949137730413,
+      "MAPE_%": 16.21602407568608,
+      "n": 11790.0,
+      "RMSE_skill_vs_naive_%": 0.0
+    },
+    "CatBoost (level target)": {
+      "RMSE": 49.80484360976268,
+      "MAE": 20.878725612251955,
+      "R2": 0.8620148997730868,
+      "MAPE_%": 18.633542604168692,
+      "n": 11790.0,
+      "RMSE_skill_vs_naive_%": -6.697851456816273
+    },
+    "LightGBM (level target)": {
+      "RMSE": 50.08520604837261,
+      "MAE": 21.39266576210451,
+      "R2": 0.8604570302192007,
+      "MAPE_%": 18.139195403263635,
+      "n": 11790.0,
+      "RMSE_skill_vs_naive_%": -7.2984771723241915
+    },
+    "XGBoost (level target)": {
+      "RMSE": 51.23926274859571,
+      "MAE": 21.23797486784905,
+      "R2": 0.8539522816497236,
+      "MAPE_%": 20.151464958982988,
+      "n": 11790.0,
+      "RMSE_skill_vs_naive_%": -9.770834506441206
+    }
+  },
+  "rolling_backtest": {
+    "origins": [
+      "2024-02",
+      "2024-03",
+      "2024-04",
+      "2024-05",
+      "2024-06",
+      "2024-07",
+      "2024-08",
+      "2024-09",
+      "2024-10"
+    ],
+    "summary": {
+      "RandomForest": {
+        "mean_RMSE": 42.922503357548955,
+        "mean_MAE": 20.20779177427456,
+        "mean_RMSE_skill_pct": 3.9310159619578107,
+        "mean_MAE_skill_pct": -2.0466260512903642,
+        "months_beating_naive_RMSE": 6.0,
+        "months_beating_naive_MAE": 6.0
+      },
+      "Stacking (LGBM+CatBoost+RF -> Ridge)": {
+        "mean_RMSE": 43.319634779548565,
+        "mean_MAE": 20.13214326610604,
+        "mean_RMSE_skill_pct": 3.0760988811655974,
+        "mean_MAE_skill_pct": -1.572701509758967,
+        "months_beating_naive_RMSE": 6.0,
+        "months_beating_naive_MAE": 5.0
+      },
+      "XGBoost": {
+        "mean_RMSE": 43.34246778354712,
+        "mean_MAE": 20.226255413752938,
+        "mean_RMSE_skill_pct": 3.036527961368844,
+        "mean_MAE_skill_pct": -2.098797385737134,
+        "months_beating_naive_RMSE": 7.0,
+        "months_beating_naive_MAE": 6.0
+      },
+      "LightGBM": {
+        "mean_RMSE": 43.436990853090805,
+        "mean_MAE": 20.15580562763984,
+        "mean_RMSE_skill_pct": 2.8348985360838963,
+        "mean_MAE_skill_pct": -1.7155246360256646,
+        "months_beating_naive_RMSE": 6.0,
+        "months_beating_naive_MAE": 6.0
+      },
+      "CatBoost": {
+        "mean_RMSE": 43.696556594866905,
+        "mean_MAE": 20.594011219513998,
+        "mean_RMSE_skill_pct": 2.0537061327707495,
+        "mean_MAE_skill_pct": -4.12503727603995,
+        "months_beating_naive_RMSE": 5.0,
+        "months_beating_naive_MAE": 6.0
+      },
+      "Naive (last month)": {
+        "mean_RMSE": 44.68188489238529,
+        "mean_MAE": 19.89691740064743,
+        "mean_RMSE_skill_pct": null,
+        "mean_MAE_skill_pct": null,
+        "months_beating_naive_RMSE": null,
+        "months_beating_naive_MAE": null
+      }
+    },
+    "note": "hyperparameters fixed from validation tuning (May-Jul 2024 lie inside the window)"
+  },
+  "shap_mean_abs": {
+    "lag_1": 62.326631969049004,
+    "lag_2": 3.9946598449182047,
+    "month_sin": 3.864063284190856,
+    "month_of_year": 3.218193871527596,
+    "hh_mean_past": 3.02795555199885,
+    "roll_mean_3": 1.9738031089615395,
+    "lag_12": 1.9726351024988893,
+    "lag_6": 1.0385678720823763,
+    "month_cos": 0.6280823355160875,
+    "roll_mean_6": 0.599067908303054,
+    "lag_3": 0.4128989101070134,
+    "roll_std_3": 0.39408930487903027,
+    "roll_std_6": 0.3819326591332267
+  },
+  "mape_rule": "actuals < 10.0 kWh excluded"
+}

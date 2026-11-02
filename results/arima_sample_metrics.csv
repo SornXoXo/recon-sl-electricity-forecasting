@@ -1,0 +1,9 @@
+,RMSE,MAE,R2,MAPE_%,n,RMSE_skill_vs_naive_%
+XGBoost,51.514,23.619,0.869,18.089,595.0,5.068
+RandomForest,52.751,23.808,0.862,18.1,595.0,2.788
+CatBoost,52.771,23.852,0.862,18.256,595.0,2.752
+Stacking (LGBM+CatBoost+RF -> Ridge),53.879,24.962,0.856,18.663,595.0,0.71
+Naive (last month),54.264,21.989,0.854,17.384,595.0,0.0
+LightGBM,54.52,23.564,0.853,17.724,595.0,-0.471
+ARIMA per household (AIC-selected),59.994,22.266,0.822,17.256,595.0,-10.558
+Seasonal naive (same month last year),69.779,39.414,0.759,35.197,595.0,-28.591

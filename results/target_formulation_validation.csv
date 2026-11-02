@@ -1,0 +1,7 @@
+,RMSE,RMSE,MAE,MAE
+target,change,level,change,level
+model,,,,
+CatBoost,42.23,43.44,20.66,21.37
+LightGBM,41.82,41.75,20.33,20.61
+RandomForest,41.49,41.38,20.32,20.39
+XGBoost,42.08,43.98,20.44,21.61

@@ -1,0 +1,6 @@
+,RMSE,MAE,R2,MAPE_%,n,RMSE_skill_vs_naive_%
+RandomForest (level target),45.674,20.077,0.884,16.521,11790.0,2.152
+Naive (last month),46.678,18.644,0.879,16.216,11790.0,0.0
+CatBoost (level target),49.805,20.879,0.862,18.634,11790.0,-6.698
+LightGBM (level target),50.085,21.393,0.86,18.139,11790.0,-7.298
+XGBoost (level target),51.239,21.238,0.854,20.151,11790.0,-9.771
