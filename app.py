@@ -132,9 +132,8 @@ st.subheader("Why this forecast? (SHAP waterfall)")
 st.caption("Starts from the model's average forecast (bottom) and adds each feature's contribution in kWh. "
            "Red pushes the forecast up, blue pulls it down.")
 with st.spinner("Computing SHAP values…"):
-    # LightGBM's built-in TreeSHAP first: shap.TreeExplainer rejects the booster under some
-    # shap/lightgbm version combinations (InvalidModelError on Streamlit Cloud). If every
-    # method fails, show the real errors instead of crashing (Cloud redacts uncaught ones).
+    # LightGBM's built-in TreeSHAP first, shap.TreeExplainer as a backup. If both fail, show
+    # the real errors instead of crashing (Streamlit Cloud redacts uncaught ones).
     methods = [explain_lgbm] if isinstance(getattr(model, "model", model), lgb.LGBMModel) else []
     sv, shap_errors = None, []
     for method in methods + [explain]:

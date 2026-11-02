@@ -15,7 +15,7 @@ def explain(model, X):
     * TimeStackingRegressor, s(x) = b + sum_i w_i g_i(x): phi_s = sum_i w_i phi_i and
       base = b + sum_i w_i base_i.
     """
-    if isinstance(model, TimeStackingRegressor):
+    if _is(model, TimeStackingRegressor):
         weights, intercept = model.weights_
         values, base = np.zeros(X.shape), intercept
         for name, base_model in model.bases_.items():
@@ -23,7 +23,7 @@ def explain(model, X):
             values += weights[name] * e.values
             base += weights[name] * float(np.ravel(e.base_values)[0])
         return _make(values, base, X)
-    if isinstance(model, ChangeTargetRegressor):
+    if _is(model, ChangeTargetRegressor):
         e = explain(model.model, X)
         values = e.values.copy()
         j = list(X.columns).index(model.base_feature)
@@ -41,35 +41,21 @@ def explain_lgbm(model, X):
     column, so it does not depend on which booster versions shap.TreeExplainer supports.
     The lag_1 persistence term is added exactly as in explain().
     """
-    inner = model.model if isinstance(model, ChangeTargetRegressor) else model
-    contrib = _lgbm_contrib(inner, X)
+    inner = model.model if _is(model, ChangeTargetRegressor) else model
+    contrib = getattr(inner, "booster_", inner).predict(X, pred_contrib=True)
     values, base = contrib[:, :-1].copy(), float(contrib[0, -1])
-    if isinstance(model, ChangeTargetRegressor):
+    if _is(model, ChangeTargetRegressor):
         j = list(X.columns).index(model.base_feature)
         values[:, j] += X[model.base_feature].values - model.base_mean_
         base += model.base_mean_
     return _make(values, base, X)
 
 
-def _lgbm_contrib(inner, X):
-    """pred_contrib via the sklearn wrapper (the same call path as .predict), then via the
-    raw Booster on a plain float array, which bypasses LightGBM's pandas handling.
-    Raises with every attempt's error if none works."""
-    booster = getattr(inner, "booster_", inner)
-    attempts = {
-        "LGBMRegressor.predict(DataFrame)": lambda: inner.predict(X, pred_contrib=True),
-        "Booster.predict(ndarray)": lambda: booster.predict(X.to_numpy(dtype=float), pred_contrib=True),
-    }
-    errors = []
-    for name, attempt in attempts.items():
-        try:
-            contrib = np.asarray(attempt(), dtype=float)
-            if contrib.shape == (len(X), X.shape[1] + 1):
-                return contrib
-            errors.append(f"{name}: unexpected shape {contrib.shape}")
-        except Exception as e:
-            errors.append(f"{name}: {type(e).__name__}: {e}")
-    raise RuntimeError("LightGBM pred_contrib failed. " + " | ".join(errors))
+def _is(obj, cls):
+    """isinstance that survives module reloads: when Streamlit re-imports src.models after a
+    code change, a cached model is still an instance of the *old* class object, so a plain
+    isinstance against the new class is False. Match on the qualified class name as well."""
+    return isinstance(obj, cls) or (type(obj).__module__, type(obj).__qualname__) == (cls.__module__, cls.__qualname__)
 
 
 def _make(values, base, X):
