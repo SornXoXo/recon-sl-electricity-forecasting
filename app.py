@@ -2,6 +2,8 @@
 
 Run with:  streamlit run app.py
 """
+import sys
+
 import joblib
 import lightgbm as lgb
 import matplotlib.pyplot as plt
@@ -130,26 +132,38 @@ st.subheader("Why this forecast? (SHAP waterfall)")
 st.caption("Starts from the model's average forecast (bottom) and adds each feature's contribution in kWh. "
            "Red pushes the forecast up, blue pulls it down.")
 with st.spinner("Computing SHAP values…"):
-    # LightGBM's built-in TreeSHAP avoids shap.TreeExplainer, which rejects the booster
-    # under some shap/lightgbm version combinations (InvalidModelError on Streamlit Cloud).
-    if isinstance(getattr(model, "model", model), lgb.LGBMModel):
-        sv = explain_lgbm(model, X)
-    else:
-        sv = explain(model, X)
-# max_display >= n_features so no "other features" row is drawn; that row triggers an
-# IndexError on tick_labels in some shap/matplotlib combinations (seen on Streamlit Cloud).
-try:
-    shap.plots.waterfall(sv[0], max_display=max(20, X.shape[1]), show=False)
-    st.pyplot(plt.gcf(), clear_figure=True)
-except Exception:
-    plt.close("all")
-    contrib = pd.Series(sv[0].values, index=sv[0].feature_names).sort_values(key=np.abs)
-    fig, ax = plt.subplots(figsize=(8, 0.35 * len(contrib) + 1))
-    ax.barh(contrib.index, contrib.values, color=np.where(contrib.values > 0, "#FF0051", "#008BFB"))
-    ax.axvline(0, color="grey", lw=0.8)
-    ax.set_xlabel("SHAP value (kWh)")
-    ax.set_title(f"Base value {float(sv[0].base_values):,.0f} kWh → forecast {pred:,.0f} kWh")
-    st.pyplot(fig, clear_figure=True)
+    # LightGBM's built-in TreeSHAP first: shap.TreeExplainer rejects the booster under some
+    # shap/lightgbm version combinations (InvalidModelError on Streamlit Cloud). If every
+    # method fails, show the real errors instead of crashing (Cloud redacts uncaught ones).
+    methods = [explain_lgbm] if isinstance(getattr(model, "model", model), lgb.LGBMModel) else []
+    sv, shap_errors = None, []
+    for method in methods + [explain]:
+        try:
+            sv = method(model, X)
+            break
+        except Exception as e:
+            shap_errors.append(f"{method.__name__}: {type(e).__name__}: {e}")
+if sv is None:
+    st.warning("The SHAP explanation could not be computed in this environment; the forecast above is unaffected.")
+    with st.expander("Error details"):
+        versions = {"python": sys.version.split()[0], "lightgbm": lgb.__version__, "shap": shap.__version__,
+                    "numpy": np.__version__, "pandas": pd.__version__}
+        st.code("\n".join(shap_errors + [f"{k}=={v}" for k, v in versions.items()]), language=None)
+else:
+    # max_display >= n_features so no "other features" row is drawn; that row triggers an
+    # IndexError on tick_labels in some shap/matplotlib combinations (seen on Streamlit Cloud).
+    try:
+        shap.plots.waterfall(sv[0], max_display=max(20, X.shape[1]), show=False)
+        st.pyplot(plt.gcf(), clear_figure=True)
+    except Exception:
+        plt.close("all")
+        contrib = pd.Series(sv[0].values, index=sv[0].feature_names).sort_values(key=np.abs)
+        fig, ax = plt.subplots(figsize=(8, 0.35 * len(contrib) + 1))
+        ax.barh(contrib.index, contrib.values, color=np.where(contrib.values > 0, "#FF0051", "#008BFB"))
+        ax.axvline(0, color="grey", lw=0.8)
+        ax.set_xlabel("SHAP value (kWh)")
+        ax.set_title(f"Base value {float(sv[0].base_values):,.0f} kWh → forecast {pred:,.0f} kWh")
+        st.pyplot(fig, clear_figure=True)
 
 with st.expander("Feature values used"):
     st.dataframe(X.T.rename(columns={0: "value"}).round(2))

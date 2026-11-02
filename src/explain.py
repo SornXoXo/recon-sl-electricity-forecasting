@@ -42,14 +42,34 @@ def explain_lgbm(model, X):
     The lag_1 persistence term is added exactly as in explain().
     """
     inner = model.model if isinstance(model, ChangeTargetRegressor) else model
-    booster = getattr(inner, "booster_", inner)
-    contrib = booster.predict(X, pred_contrib=True)
+    contrib = _lgbm_contrib(inner, X)
     values, base = contrib[:, :-1].copy(), float(contrib[0, -1])
     if isinstance(model, ChangeTargetRegressor):
         j = list(X.columns).index(model.base_feature)
         values[:, j] += X[model.base_feature].values - model.base_mean_
         base += model.base_mean_
     return _make(values, base, X)
+
+
+def _lgbm_contrib(inner, X):
+    """pred_contrib via the sklearn wrapper (the same call path as .predict), then via the
+    raw Booster on a plain float array, which bypasses LightGBM's pandas handling.
+    Raises with every attempt's error if none works."""
+    booster = getattr(inner, "booster_", inner)
+    attempts = {
+        "LGBMRegressor.predict(DataFrame)": lambda: inner.predict(X, pred_contrib=True),
+        "Booster.predict(ndarray)": lambda: booster.predict(X.to_numpy(dtype=float), pred_contrib=True),
+    }
+    errors = []
+    for name, attempt in attempts.items():
+        try:
+            contrib = np.asarray(attempt(), dtype=float)
+            if contrib.shape == (len(X), X.shape[1] + 1):
+                return contrib
+            errors.append(f"{name}: unexpected shape {contrib.shape}")
+        except Exception as e:
+            errors.append(f"{name}: {type(e).__name__}: {e}")
+    raise RuntimeError("LightGBM pred_contrib failed. " + " | ".join(errors))
 
 
 def _make(values, base, X):
