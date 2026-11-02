@@ -33,6 +33,25 @@ def explain(model, X):
     return _make(e.values, float(np.ravel(e.base_values)[0]), X)
 
 
+def explain_lgbm(model, X):
+    """Same output as explain() for a LightGBM model (optionally inside ChangeTargetRegressor),
+    but from LightGBM's own pred_contrib=True instead of shap.TreeExplainer.
+
+    pred_contrib returns path-dependent TreeSHAP values with the base value in the last
+    column, so it does not depend on which booster versions shap.TreeExplainer supports.
+    The lag_1 persistence term is added exactly as in explain().
+    """
+    inner = model.model if isinstance(model, ChangeTargetRegressor) else model
+    booster = getattr(inner, "booster_", inner)
+    contrib = booster.predict(X, pred_contrib=True)
+    values, base = contrib[:, :-1].copy(), float(contrib[0, -1])
+    if isinstance(model, ChangeTargetRegressor):
+        j = list(X.columns).index(model.base_feature)
+        values[:, j] += X[model.base_feature].values - model.base_mean_
+        base += model.base_mean_
+    return _make(values, base, X)
+
+
 def _make(values, base, X):
     return shap.Explanation(values=values, base_values=np.full(len(X), base),
                             data=X.values, feature_names=list(X.columns))

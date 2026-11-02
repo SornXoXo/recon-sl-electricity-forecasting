@@ -3,6 +3,7 @@
 Run with:  streamlit run app.py
 """
 import joblib
+import lightgbm as lgb
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -10,7 +11,7 @@ import shap
 import streamlit as st
 
 from src import config
-from src.explain import explain
+from src.explain import explain, explain_lgbm
 from src.features import features_for_next_month
 
 MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
@@ -129,7 +130,12 @@ st.subheader("Why this forecast? (SHAP waterfall)")
 st.caption("Starts from the model's average forecast (bottom) and adds each feature's contribution in kWh. "
            "Red pushes the forecast up, blue pulls it down.")
 with st.spinner("Computing SHAP values…"):
-    sv = explain(model, X)
+    # LightGBM's built-in TreeSHAP avoids shap.TreeExplainer, which rejects the booster
+    # under some shap/lightgbm version combinations (InvalidModelError on Streamlit Cloud).
+    if isinstance(getattr(model, "model", model), lgb.LGBMModel):
+        sv = explain_lgbm(model, X)
+    else:
+        sv = explain(model, X)
 # max_display >= n_features so no "other features" row is drawn; that row triggers an
 # IndexError on tick_labels in some shap/matplotlib combinations (seen on Streamlit Cloud).
 try:
