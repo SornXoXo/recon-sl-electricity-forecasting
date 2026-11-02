@@ -32,6 +32,7 @@ A global 99.5th-percentile cap was tested and **rejected**: 74% of the readings 
   - target month (number, sin, cos).
 
   Every feature uses only months before the target month. The notebook asserts this rather than just stating it.
+  `lag_12` does not exist for target months before 2023-10, so it is left as NaN (not imputed) and handled natively by the tree models. This affects 37.5% of the rows the final model is trained on; every test row has a real `lag_12`.
 - **Target:** the change from last month (prediction = `lag_1` + model output), chosen over the level on validation.
 - **Split (by target month):**
   - train: 2023-04 → 2024-04 (13 months)
