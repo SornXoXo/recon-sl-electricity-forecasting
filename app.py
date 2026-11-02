@@ -17,6 +17,10 @@ from src.explain import explain, explain_lgbm
 from src.features import features_for_next_month
 
 MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+# Charts are shown at a fixed pixel width (inches x 100 dpi) instead of stretching to the page.
+# st.pyplot still renders at 200 dpi, so they stay sharp.
+FIG_DPI, FIG_W = 100, 8
+FIG_PX = FIG_W * FIG_DPI
 
 st.set_page_config(page_title="Household electricity forecast", page_icon="⚡", layout="wide")
 
@@ -104,9 +108,9 @@ else:
 X = features_for_next_month(history, target)[features]
 pred = float(model.predict(X)[0])
 
-left, right = st.columns([1, 2])
+left, right = st.columns([2, 3])
 with left:
-    st.metric(f"Forecast for {target:%B %Y}", f"{pred:,.0f} kWh",
+    st.metric(f"Forecast for {target:%b %Y}", f"{pred:,.0f} kWh",
               delta=f"{pred - history.iloc[-1]:+,.0f} kWh vs last month", delta_color="off")
     if actual is not None:
         st.metric("Actual reading (backtest)", f"{actual:,.0f} kWh", delta=f"{actual - pred:+,.0f} kWh error",
@@ -118,7 +122,7 @@ with left:
                    "in training it used all available history.")
 
 with right:
-    fig, ax = plt.subplots(figsize=(8, 3.2))
+    fig, ax = plt.subplots(figsize=(FIG_W, 3.5), dpi=FIG_DPI)
     h = history.iloc[-24:]
     ax.plot(h.index, h.values, marker="o", label="history (cleaned)")
     ax.plot([h.index[-1], target], [h.values[-1], pred], "--", color="#C44E52")
@@ -126,7 +130,7 @@ with right:
     if actual is not None:
         ax.scatter([target], [actual], marker="x", color="k", s=80, zorder=3, label="actual")
     ax.set_ylabel("kWh"); ax.legend(loc="upper left"); ax.grid(alpha=0.3)
-    st.pyplot(fig, clear_figure=True)
+    st.pyplot(fig, clear_figure=True, width=FIG_PX)
 
 st.subheader("Why this forecast? (SHAP waterfall)")
 st.caption("Starts from the model's average forecast (bottom) and adds each feature's contribution in kWh. "
@@ -153,16 +157,18 @@ else:
     # IndexError on tick_labels in some shap/matplotlib combinations (seen on Streamlit Cloud).
     try:
         shap.plots.waterfall(sv[0], max_display=max(20, X.shape[1]), show=False)
-        st.pyplot(plt.gcf(), clear_figure=True)
+        fig = plt.gcf()
+        fig.set_size_inches(FIG_W, 5)   # shap sizes the figure by row count; keep it compact
+        st.pyplot(fig, clear_figure=True, width=FIG_PX)
     except Exception:
         plt.close("all")
         contrib = pd.Series(sv[0].values, index=sv[0].feature_names).sort_values(key=np.abs)
-        fig, ax = plt.subplots(figsize=(8, 0.35 * len(contrib) + 1))
+        fig, ax = plt.subplots(figsize=(FIG_W, 5), dpi=FIG_DPI)
         ax.barh(contrib.index, contrib.values, color=np.where(contrib.values > 0, "#FF0051", "#008BFB"))
         ax.axvline(0, color="grey", lw=0.8)
         ax.set_xlabel("SHAP value (kWh)")
         ax.set_title(f"Base value {float(sv[0].base_values):,.0f} kWh → forecast {pred:,.0f} kWh")
-        st.pyplot(fig, clear_figure=True)
+        st.pyplot(fig, clear_figure=True, width=FIG_PX)
 
 with st.expander("Feature values used"):
     st.dataframe(X.T.rename(columns={0: "value"}).round(2))
