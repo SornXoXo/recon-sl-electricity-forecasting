@@ -233,9 +233,9 @@
     ],
     "ridge_alpha": 1000000.0,
     "weights": {
-      "LightGBM": 0.21434599978716343,
-      "CatBoost": 0.27529952655090734,
-      "RandomForest": 0.4970012395332134
+      "LightGBM": 0.21434599978716568,
+      "CatBoost": 0.2752995265509063,
+      "RandomForest": 0.4970012395332122
     },
     "intercept": -1.3240904892550702,
     "oof_blocks": [
@@ -271,12 +271,12 @@
       "RMSE_skill_vs_naive_%": 6.871565027739058
     },
     "Stacking (LGBM+CatBoost+RF -> Ridge)": {
-      "RMSE": 42.210341845398354,
-      "MAE": 20.44555301093223,
+      "RMSE": 42.21034184539837,
+      "MAE": 20.445553010932233,
       "R2": 0.8964838578799814,
       "MAPE_%": 18.693079491549433,
       "n": 11827.0,
-      "RMSE_skill_vs_naive_%": 6.575344257886206
+      "RMSE_skill_vs_naive_%": 6.575344257886173
     },
     "CatBoost": {
       "RMSE": 42.22886468225892,
@@ -313,12 +313,12 @@
       "RMSE_skill_vs_naive_%": 0.0
     },
     "RandomForest": {
-      "RMSE": 48.448571841010754,
+      "RMSE": 48.44857184101076,
       "MAE": 21.10460542068713,
       "R2": 0.8694277190098356,
       "MAPE_%": 16.799624669774975,
       "n": 11790.0,
-      "RMSE_skill_vs_naive_%": -3.7922849851849794
+      "RMSE_skill_vs_naive_%": -3.7922849851850016
     },
     "LightGBM": {
       "RMSE": 48.49503458042286,
@@ -345,7 +345,7 @@
       "RMSE_skill_vs_naive_%": -5.695129849390423
     },
     "Stacking (LGBM+CatBoost+RF -> Ridge)": {
-      "RMSE": 49.65640506526115,
+      "RMSE": 49.656405065261154,
       "MAE": 22.49193553306507,
       "R2": 0.8628361767086192,
       "MAPE_%": 17.39092280284746,
@@ -387,12 +387,12 @@
       "RMSE_skill_vs_naive_%": 2.751863553084788
     },
     "Stacking (LGBM+CatBoost+RF -> Ridge)": {
-      "RMSE": 53.878982257324125,
+      "RMSE": 53.87898225732413,
       "MAE": 24.961732194446707,
-      "R2": 0.8563350887061056,
+      "R2": 0.8563350887061055,
       "MAPE_%": 18.663414344518632,
       "n": 595.0,
-      "RMSE_skill_vs_naive_%": 0.7101260614394977
+      "RMSE_skill_vs_naive_%": 0.7101260614394866
     },
     "Naive (last month)": {
       "RMSE": 54.26432738817239,
@@ -429,12 +429,12 @@
   },
   "test_metrics_level_target": {
     "RandomForest (level target)": {
-      "RMSE": 45.67367066294407,
+      "RMSE": 45.67367066294406,
       "MAE": 20.076513538270977,
       "R2": 0.8839564880213073,
       "MAPE_%": 16.521227845677277,
       "n": 11790.0,
-      "RMSE_skill_vs_naive_%": 2.152437902101967
+      "RMSE_skill_vs_naive_%": 2.152437902101978
     },
     "Naive (last month)": {
       "RMSE": 46.678394109857166,
@@ -483,18 +483,18 @@
     ],
     "summary": {
       "RandomForest": {
-        "mean_RMSE": 42.922503357548955,
+        "mean_RMSE": 42.92250335754896,
         "mean_MAE": 20.20779177427456,
-        "mean_RMSE_skill_pct": 3.9310159619578107,
-        "mean_MAE_skill_pct": -2.0466260512903642,
+        "mean_RMSE_skill_pct": 3.9310159619578084,
+        "mean_MAE_skill_pct": -2.046626051290363,
         "months_beating_naive_RMSE": 6.0,
         "months_beating_naive_MAE": 6.0
       },
       "Stacking (LGBM+CatBoost+RF -> Ridge)": {
-        "mean_RMSE": 43.319634779548565,
+        "mean_RMSE": 43.31963477954856,
         "mean_MAE": 20.13214326610604,
-        "mean_RMSE_skill_pct": 3.0760988811655974,
-        "mean_MAE_skill_pct": -1.572701509758967,
+        "mean_RMSE_skill_pct": 3.076098881165601,
+        "mean_MAE_skill_pct": -1.5727015097589643,
         "months_beating_naive_RMSE": 6.0,
         "months_beating_naive_MAE": 5.0
       },

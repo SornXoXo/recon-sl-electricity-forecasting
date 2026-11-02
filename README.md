@@ -77,7 +77,9 @@ On MAE, naive is slightly better on average (by 1.6–4%).
 - Monthly household consumption is dominated by persistence. The learned models add a small, unstable improvement on RMSE: +7% on validation, −4% on the 3 test months, +3% averaged over 9 backtest months.
 - The test months were hurt by changes shared by all households, which household history cannot anticipate. In addition, month features learned a one-off October 2023 drop as "seasonal".
 - R² ≈ 0.87 is mostly *between-household* variance (naive scores 0.88 too). Use skill vs naive, not R², to judge the models.
-- **SHAP:** the model is "last month + a rebound correction (`lag_2`, household mean) + a calendar effect". It shows a rise into March–April, consistent with Sri Lanka's hottest inter-monsoon period.
+- **SHAP:** the model is "last month + a rebound correction (`lag_2`, household mean) + a calendar effect".
+  - **`lag_1`'s top importance is mostly built in.** SHAP explains the level forecast `lag_1` + predicted change, so the `lag_1 − mean` term is attributed to `lag_1` by design. Only about 10 of its 62 kWh mean |SHAP| is learned, and that learned part is mean reversion for heavy households.
+  - **Month effects are confounded.** The month PDP shows a rise into March–April, consistent with Sri Lanka's hottest inter-monsoon period. But the final model saw each calendar month only once (Aug–Mar) or twice (Apr–Jul), so month effects can't be separated from one-off events of 2023–24 such as tariff revisions.
 
 See the notebook's *Conclusions and limitations* for the full discussion, including the level vs change target decision.
 
